@@ -1,6 +1,6 @@
 {
   "name": "gitteh-log",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "walking over history with gitteh",
   "main": "index.js",
   "dependencies": {
