@@ -1,0 +1,32 @@
+{
+  "name": "gitteh-log",
+  "version": "0.0.0",
+  "description": "walking over history with gitteh",
+  "main": "index.js",
+  "dependencies": {
+    "gitteh-promisified": "~0.1.0",
+    "reduced": "~0.1.1"
+  },
+  "devDependencies": {
+    "coffee-script": "~1.6.2",
+    "mocha": "~1.9.0",
+    "semver": "~1.1.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/andreypopp/gitteh-log.git"
+  },
+  "homepage": "https://github.com/andreypopp/gitteh-log",
+  "keywords": [
+    "git",
+    "gitteh",
+    "history",
+    "log"
+  ],
+  "author": {
+    "name": "Andrey Popp",
+    "email": "8mayday@gmail.com",
+    "url": "http://andreypopp.com"
+  },
+  "license": "MIT"
+}
