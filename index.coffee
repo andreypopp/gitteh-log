@@ -57,15 +57,13 @@ previousCommitsSeq = (commit) ->
   join series(getPreviousCommit, commit)
 
 logSeq = (ref, file) ->
-  commit = ref.repository.commit(ref.target)
+  commits = previousCommitsSeq ref.repository.commit(ref.target)
   if file?
-    commits = previousCommitsSeq(commit)
-    commits = window commits, 2
-    commits = filterM commits, ([commit, prevCommit]) ->
+    commits = filterM (window commits, 2), ([commit, prevCommit]) ->
       changedBetween(file, commit, prevCommit)
-    commits = map commits, ([commit, prevCommit]) -> commit
+    map commits, ([commit, prevCommit]) -> commit
   else
-    previousCommitsSeq(commit)
+    commits
 
 log = (ref, file) ->
   produced logSeq(ref, file)

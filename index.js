@@ -90,23 +90,21 @@ previousCommitsSeq = function(commit) {
 };
 
 logSeq = function(ref, file) {
-  var commit, commits;
-  commit = ref.repository.commit(ref.target);
+  var commits;
+  commits = previousCommitsSeq(ref.repository.commit(ref.target));
   if (file != null) {
-    commits = previousCommitsSeq(commit);
-    commits = window(commits, 2);
-    commits = filterM(commits, function(_arg) {
+    commits = filterM(window(commits, 2), function(_arg) {
       var commit, prevCommit;
       commit = _arg[0], prevCommit = _arg[1];
       return changedBetween(file, commit, prevCommit);
     });
-    return commits = map(commits, function(_arg) {
+    return map(commits, function(_arg) {
       var commit, prevCommit;
       commit = _arg[0], prevCommit = _arg[1];
       return commit;
     });
   } else {
-    return previousCommitsSeq(commit);
+    return commits;
   }
 };
 
