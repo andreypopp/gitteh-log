@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "gitteh-promisified": "~0.1.0",
+    "gitteh-tree-entry": "~0.1.0",
     "reduced": "~0.2.0"
   },
   "devDependencies": {

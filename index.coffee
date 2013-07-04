@@ -1,5 +1,6 @@
 git = require 'gitteh-promisified'
-{all, resolve} = require 'kew'
+{commitTreeEntry} = require 'gitteh-tree-entry'
+{all} = require 'kew'
 {SKIP, asSeq, produced, reduced, join, series, map, empty, window} = require 'reduced'
 
 # m a, (a -> m bool) -> m a
@@ -13,30 +14,15 @@ filterM = (seq, f) ->
           if allowed then done(null, v) else done(SKIP)
         .end()
 
-treeEntry = (tree, path) ->
-  path = path.split('/').filter(Boolean) unless Array.isArray(path)
-
-  for entry in tree.entries when entry.name == path[0]
-    if path.length == 1 and entry.type == 'blob'
-      return resolve(entry)
-    else if path.length > 1 and entry.type == 'tree'
-      return tree.repository.tree(entry.id)
-        .then (tree) -> treeEntry(tree, path.slice(1))
-
-  resolve(undefined)
-
-refTreeEntry = (ref, path) ->
-  ref.tree().then (tree) -> treeEntry(tree, path)
-
 changedBetween = (path, commit, prevCommit) ->
   if prevCommit?
-    all(refTreeEntry(commit, path), refTreeEntry(prevCommit, path))
+    all(commitTreeEntry(commit, path), commitTreeEntry(prevCommit, path))
       .then ([entry, prevEntry]) ->
         created = entry and not prevEntry
         changed = entry?.id != prevEntry?.id
         changed or created
   else
-    commit.tree().then (tree) -> treeEntry(tree, path)
+    commitTreeEntry(commit, path)
 
 previousCommitsSeq = (commit) ->
 
