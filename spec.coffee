@@ -18,3 +18,15 @@ describe 'gitteh-log', ->
         done()
       .fail(done)
       .end()
+
+  it 'works with file arg', (done) ->
+    branch
+      .then (branch) ->
+        log(branch, 'package.json')
+      .then (log) ->
+        log.reverse()
+        equal log[0].id, '624558d1f88b4c0a675fb53c2cccb6baa4ba6b1c'
+        equal log[1].id, '206701c875d06848ec78334360d0a247a6c0aada'
+        done()
+      .fail(done)
+      .end()

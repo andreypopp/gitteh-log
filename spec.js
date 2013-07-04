@@ -14,12 +14,22 @@ describe('gitteh-log', function() {
   branch = git.openRepository(join(__dirname, '.git')).then(function(repo) {
     return repo.reference("refs/heads/master");
   });
-  return it('works', function(done) {
+  it('works', function(done) {
     return branch.then(function(branch) {
       return log(branch);
     }).then(function(log) {
       log.reverse();
       equal(log[0].id, '624558d1f88b4c0a675fb53c2cccb6baa4ba6b1c');
+      return done();
+    }).fail(done).end();
+  });
+  return it('works with file arg', function(done) {
+    return branch.then(function(branch) {
+      return log(branch, 'package.json');
+    }).then(function(log) {
+      log.reverse();
+      equal(log[0].id, '624558d1f88b4c0a675fb53c2cccb6baa4ba6b1c');
+      equal(log[1].id, '206701c875d06848ec78334360d0a247a6c0aada');
       return done();
     }).fail(done).end();
   });

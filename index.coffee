@@ -1,5 +1,45 @@
 git = require 'gitteh-promisified'
-{produced, join, series, map, empty} = require 'reduced'
+{all, resolve} = require 'kew'
+{SKIP, asSeq, produced, reduced, join, series, map, empty, window} = require 'reduced'
+
+# m a, (a -> m bool) -> m a
+filterM = (seq, f) ->
+  seq = asSeq seq
+  next: (done) ->
+    seq.next (s, v) ->
+      return done(s) if s?
+      reduced(asSeq f v)
+        .then (allowed) ->
+          if allowed then done(null, v) else done(SKIP)
+        .end()
+
+treeEntry = (tree, path) ->
+  path = path.split('/').filter(Boolean) unless Array.isArray(path)
+
+  for entry in tree.entries when entry.name == path[0]
+
+    if path.length == 1 and entry.type == 'blob'
+      return resolve(entry)
+
+    else if path.length > 1 and entry.type == 'tree'
+      return tree.repository.tree(entry.id)
+        .then (tree) -> treeEntry(tree, path.slice(1))
+
+  return resolve(undefined)
+
+changedBetween = (path, commit, prevCommit) ->
+  if prevCommit?
+    all(commit.tree(), prevCommit.tree()).then ([tree, prevTree]) ->
+      all(treeEntry(tree, path), treeEntry(prevTree, path)).then ([entry, prevEntry]) ->
+        created = entry and not prevEntry
+        changed = entry?.id != prevEntry?.id
+        changed or created
+  else
+    commit.tree()
+      .then (tree) ->
+        treeEntry(tree, path)
+      .then (entry) ->
+        entry?
 
 previousCommitsSeq = (commit) ->
 
@@ -16,10 +56,18 @@ previousCommitsSeq = (commit) ->
 
   join series(getPreviousCommit, commit)
 
-logSeq = (ref) ->
-  previousCommitsSeq ref.repository.commit ref.target
+logSeq = (ref, file) ->
+  commit = ref.repository.commit(ref.target)
+  if file?
+    commits = previousCommitsSeq(commit)
+    commits = window commits, 2
+    commits = filterM commits, ([commit, prevCommit]) ->
+      changedBetween(file, commit, prevCommit)
+    commits = map commits, ([commit, prevCommit]) -> commit
+  else
+    previousCommitsSeq(commit)
 
-log = (ref) ->
-  produced logSeq ref
+log = (ref, file) ->
+  produced logSeq(ref, file)
 
 module.exports = {log, logSeq, previousCommitsSeq}
