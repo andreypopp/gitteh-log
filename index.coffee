@@ -17,29 +17,26 @@ treeEntry = (tree, path) ->
   path = path.split('/').filter(Boolean) unless Array.isArray(path)
 
   for entry in tree.entries when entry.name == path[0]
-
     if path.length == 1 and entry.type == 'blob'
       return resolve(entry)
-
     else if path.length > 1 and entry.type == 'tree'
       return tree.repository.tree(entry.id)
         .then (tree) -> treeEntry(tree, path.slice(1))
 
-  return resolve(undefined)
+  resolve(undefined)
+
+refTreeEntry = (ref, path) ->
+  ref.tree().then (tree) -> treeEntry(tree, path)
 
 changedBetween = (path, commit, prevCommit) ->
   if prevCommit?
-    all(commit.tree(), prevCommit.tree()).then ([tree, prevTree]) ->
-      all(treeEntry(tree, path), treeEntry(prevTree, path)).then ([entry, prevEntry]) ->
+    all(refTreeEntry(commit, path), refTreeEntry(prevCommit, path))
+      .then ([entry, prevEntry]) ->
         created = entry and not prevEntry
         changed = entry?.id != prevEntry?.id
         changed or created
   else
-    commit.tree()
-      .then (tree) ->
-        treeEntry(tree, path)
-      .then (entry) ->
-        entry?
+    commit.tree().then (tree) -> treeEntry(tree, path)
 
 previousCommitsSeq = (commit) ->
 
